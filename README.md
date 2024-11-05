@@ -1,10 +1,14 @@
 # Hedera Starter Examples - JavaScript SDK
 
-This repo shows how you can use the Hedera JavaScript SDK to use the main Hedera service. One example is included for each of the following:
+This repo shows how you can use the Hedera JavaScript SDK to to build applications using the Hedera service. One example is included for each of the following services:
 
 - Hedera Consensus Service (HCS): [index-consensus.js](/index-consensus.js)
 - Hedera Token Service (HTS): [index-token.js](index-token.js)
 - Hedera Smart Contract Service (HSCS): [index-contract.js](/index-contract.js)
+
+## accompanying Slides
+
+Access and review the accompanying slides in PDF format [here]()
 
 ## Try It in Gitpod
 
