@@ -1,0 +1,5 @@
+asks:
+  - name: Setup environment
+    init: |
+      cp .env.example .env
+      npm install
