@@ -6,9 +6,7 @@ This repo shows how you can use the Hedera JavaScript SDK to to build applicatio
 - Hedera Token Service (HTS): [index-token.js](index-token.js)
 - Hedera Smart Contract Service (HSCS): [index-contract.js](/index-contract.js)
 
-## accompanying Slides
-
-Access and review the accompanying slides in PDF format [here]()
+This repo includes the PDF slides from the Hedera 101 workshop. Review the slides [here](/slides/Hedera-101-Workshop.pdf).
 
 ## Try It in Gitpod
 
