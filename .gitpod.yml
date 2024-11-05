@@ -1,4 +1,4 @@
-asks:
+tasks:
   - name: Setup environment
     init: |
       cp .env.example .env
