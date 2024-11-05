@@ -1,12 +1,12 @@
 import { AccountCreateTransaction } from "@hashgraph/sdk";
 
 async function accountCreateFcn(pvKey, iBal, client) {
-	const response = await new AccountCreateTransaction()
+	const accountCreateTx = await new AccountCreateTransaction()
 		.setInitialBalance(iBal)
 		.setKey(pvKey.publicKey)
-		.setMaxAutomaticTokenAssociations(10)
+		.setMaxAutomaticTokenAssociations(-1) // Unlimited associations
 		.execute(client);
-	const receipt = await response.getReceipt(client);
-	return [receipt.status, receipt.accountId];
+	const accountCreateRx = await accountCreateTx.getReceipt(client);
+	return [accountCreateTx.transactionId, accountCreateRx.accountId];
 }
 export default accountCreateFcn;

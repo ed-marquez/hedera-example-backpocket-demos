@@ -1,65 +1,67 @@
-import { TokenCreateTransaction, TokenType, TokenSupplyType, TokenMintTransaction } from "@hashgraph/sdk";
+import { TokenCreateTransaction, TransferTransaction, TokenMintTransaction } from "@hashgraph/sdk";
 import * as queries from "./queries.js";
 
-export async function createFtFcn(tName, tSymbol, iSupply, id, pvKey, client) {
-	const tokenCreateTx = new TokenCreateTransaction()
-		.setTokenName(tName)
-		.setTokenSymbol(tSymbol)
+export async function createHtsTokenFcn(tkName, tkSymbol, trId, tkType, sType, iSupply, maxSupply, customFees, listOfKeys, trPvKey, client) {
+	const tokenCreateTx = await new TokenCreateTransaction()
+		.setTokenName(tkName)
+		.setTokenSymbol(tkSymbol)
+		.setTreasuryAccountId(trId)
+		.setTokenType(tkType)
+		.setSupplyType(sType)
 		.setDecimals(0)
 		.setInitialSupply(iSupply)
-		.setTreasuryAccountId(id)
-		.setAdminKey(pvKey.publicKey)
-		.setSupplyKey(pvKey.publicKey)
-		.freezeWith(client);
-	const tokenCreateSign = await tokenCreateTx.sign(pvKey);
+		.setMaxSupply(maxSupply)
+		.setCustomFees(customFees)
+		.setAdminKey(listOfKeys[0].publicKey)
+		.setSupplyKey(listOfKeys[1].publicKey)
+		.setPauseKey(listOfKeys[2].publicKey)
+		.setFreezeKey(listOfKeys[3].publicKey)
+		.setWipeKey(listOfKeys[4].publicKey)
+		// .setKycKey(listOfKeys[5].publicKey)
+		.setFeeScheduleKey(listOfKeys[6].publicKey)
+		.setMetadataKey(listOfKeys[7].publicKey)
+		.freezeWith(client)
+		.sign(trPvKey);
+	const tokenCreateSign = await tokenCreateTx.sign(listOfKeys[0]);
 	const tokenCreateSubmit = await tokenCreateSign.execute(client);
 	const tokenCreateRx = await tokenCreateSubmit.getReceipt(client);
 	const tokenId = tokenCreateRx.tokenId;
 
 	const tokenInfo = await queries.tokenQueryFcn(tokenId, client);
 
-	return [tokenId, tokenInfo];
+	return [tokenId, tokenInfo, tokenCreateSubmit.transactionId];
 }
 
-export async function createMintNftFcn(tName, tSymbol, iSupply, maxSupply, id, pvKey, client) {
-	const nftCreate = new TokenCreateTransaction()
-		.setTokenName(tName)
-		.setTokenSymbol(tSymbol)
-		.setTokenType(TokenType.NonFungibleUnique)
-		.setSupplyType(TokenSupplyType.Finite)
-		.setDecimals(0)
-		.setInitialSupply(iSupply)
-		.setTreasuryAccountId(id)
-		.setSupplyKey(pvKey.publicKey)
-		.setMaxSupply(maxSupply)
-		// .setCustomFees([nftCustomFee])
-		// .setAdminKey(adminKey)
-		// .setPauseKey(pauseKey)
-		// .setFreezeKey(freezeKey)
-		// .setWipeKey(wipeKey)
-		.freezeWith(client);
-
-	const nftCreateTxSign = await nftCreate.sign(pvKey);
-	const nftCreateSubmit = await nftCreateTxSign.execute(client);
-	const nftCreateRx = await nftCreateSubmit.getReceipt(client);
-	const tokenId = nftCreateRx.tokenId;
-
+export async function mintNftSerialsFcn(tokenId, supplyKey, client) {
 	// // MINT NEW BATCH OF NFTs
+	// Replace IPFS CID with your own
 	const CID = [
-		Buffer.from("ipfs://QmNPCiNA3Dsu3K5FxDPMG5Q3fZRwVTg14EXA92uqEeSRXn"),
-		Buffer.from("ipfs://QmZ4dgAgt8owvnULxnKxNe8YqpavtVCXmc1Lt2XajFpJs9"),
-		Buffer.from("ipfs://QmPzY5GxevjyfMUF5vEAjtyRoigzWp47MiKAtLBduLMC1T"),
-		Buffer.from("ipfs://Qmd3kGgSrAwwSrhesYcY7K54f3qD7MDo38r7Po2dChtQx5"),
-		Buffer.from("ipfs://QmWgkKz3ozgqtnvbCLeh7EaR1H8u5Sshx3ZJzxkcrT3jbw"),
+		Buffer.from("ipfs://bafkreibr7cyxmy4iyckmlyzige4ywccyygomwrcn4ldcldacw3nxe3ikgq"),
+		Buffer.from("ipfs://bafkreig73xgqp7wy7qvjwz33rp3nkxaxqlsb7v3id24poe2dath7pj5dhe"),
+		Buffer.from("ipfs://bafkreigltq4oaoifxll3o2cc3e3q3ofqzu6puennmambpulxexo5sryc6e"),
+		Buffer.from("ipfs://bafkreiaoswszev3uoukkepctzpnzw56ey6w3xscokvsvmfrqdzmyhas6fu"),
+		Buffer.from("ipfs://bafkreih6cajqynaqwbrmiabk2jxpy56rpf25zvg5lbien73p5ysnpehyjm"),
 	];
 	const mintTx = new TokenMintTransaction()
 		.setTokenId(tokenId)
 		.setMetadata(CID) //Batch minting - UP TO 10 NFTs in single tx
 		.freezeWith(client);
-	const mintTxSign = await mintTx.sign(pvKey);
+	const mintTxSign = await mintTx.sign(supplyKey);
 	const mintTxSubmit = await mintTxSign.execute(client);
 	const mintRx = await mintTxSubmit.getReceipt(client);
 	const tokenInfo = await queries.tokenQueryFcn(tokenId, client);
 
-	return [tokenId, tokenInfo];
+	return [mintRx, tokenInfo, mintTxSubmit.transactionId];
+}
+
+export async function transferFtFcn(tId, senderId, receiverId, amount, senderKey, client) {
+	const tokenTransferTx = new TransferTransaction()
+		.addTokenTransfer(tId, senderId, amount * -1)
+		.addTokenTransfer(tId, receiverId, amount)
+		.freezeWith(client);
+	const tokenTransferSign = await tokenTransferTx.sign(senderKey);
+	const tokenTransferSubmit = await tokenTransferSign.execute(client);
+	const tokenTransferRx = await tokenTransferSubmit.getReceipt(client);
+
+	return [tokenTransferRx, tokenTransferTx];
 }
